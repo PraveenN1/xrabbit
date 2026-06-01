@@ -110,6 +110,7 @@ class XRabbit:
         callback: Callable[[Any], None],
         exchange: ExchangeConfig = None,
         routing_key: str = "",
+        enable_dlq: bool = False,
     ):
         if not self.consumer:
             raise RuntimeError("XRabbit is not connected.")
@@ -118,7 +119,11 @@ class XRabbit:
         while True:
             try:
                 self.consumer.listen(
-                    queue, callback, exchange=exchange, routing_key=routing_key
+                    queue,
+                    callback,
+                    exchange=exchange,
+                    routing_key=routing_key,
+                    enable_dlq=enable_dlq,
                 )
             except (pika.exceptions.ConnectionClosed, pika.exceptions.ChannelClosed):
                 print(

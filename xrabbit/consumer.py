@@ -15,13 +15,31 @@ class XRabbitConsumer:
         callback: Callable[[Any], None],
         exchange: Optional[ExchangeConfig],
         routing_key: str = "",
+        enable_dlq: bool = False
     ):
         """
         Starts listening on a queue. If an exchange configuration is passed,
         it automatically sets up the binding rules.
         """
+        
+        queue_arguments = {}
+        
+        if enable_dlq:
+            dlx_name = f"{queue}.dlx"
+            dlq_name = f"{queue}.dlq"
+        
+            self._channel.exchange_declare(exchange=dlx_name,exchange_type="direct",durable=True)
+            
+            self._channel.queue_declare(queue=dlq_name,durable=True)
+            
+            self._channel.queue_bind(queue=dlq_name, exchange=dlx_name,routing_key=queue)
+            
+            queue_arguments = {
+                "x-dead-letter-exchange": dlx_name,
+                "x-dead-letter-routing-key": queue
+            }
 
-        self._channel.queue_declare(queue=queue, durable=True)
+        self._channel.queue_declare(queue=queue, durable=True, arguments=queue_arguments)
 
         if exchange:
             self._channel.exchange_declare(
@@ -51,7 +69,7 @@ class XRabbitConsumer:
                 ch.basic_ack(delivery_tag=method.delivery_tag)
             except Exception as e:
                 print(f"[XRabbit Worker Error]: Exception raised in your callback: {e}")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
         self._channel.basic_consume(queue=queue, on_message_callback=internal_callback)
 

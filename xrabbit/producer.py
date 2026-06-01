@@ -38,7 +38,7 @@ class XRabbitProducer:
                 durable=exchange.durable,
             )
         elif queue:
-            self._channel.queue_declare(queue=queue, durable=True)
+            exchange_name = ""
             target_routing_key = queue
 
         self._channel.basic_publish(

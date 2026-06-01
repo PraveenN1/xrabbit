@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from typing import Optional
 
 @dataclass
 class RabbitCredentials:
@@ -21,3 +21,11 @@ class ExchangeConfig:
     name: str
     type: str = "direct"  # Options: direct, fanout, topic
     durable: bool = True
+
+
+@dataclass
+class QueueConfig:
+    name: str
+    durable: bool = True
+    dead_letter_exchange: Optional[str] = None
+    dead_letter_routing_key: Optional[str] = None
