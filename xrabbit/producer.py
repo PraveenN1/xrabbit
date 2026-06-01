@@ -1,37 +1,56 @@
 import json
 import pika
-from typing import Any
+from typing import Any, Optional
+from .configs import ExchangeConfig
+
 
 class XRabbitProducer:
-    def __init__(self,channel:pika.adapters.blocking_connection.BlockingChannel):
-        self._channel=channel
-        
-    def publish(self,queue:str,message:Any):
+    def __init__(self, channel: pika.adapters.blocking_connection.BlockingChannel):
+        self._channel = channel
+
+    def publish(
+        self,
+        queue: Optional[str] = None,
+        message: Any = None,
+        exchange: Optional[ExchangeConfig] = None,
+        routing_key: str = "",
+    ):
         """
-        Intercepts the message payload and safely transmits it. 
-        Automatically handles:
-        1. Queue Declaration (Ensures the target queue exists)
-        2. Serialization (Python dictionaries/lists -> JSON text strings)
-        3. Persistence (Flags the message to be saved to disk against crashes)
+        Publishes a message. Supports both simple queue direct targeting
+        and advanced Exchange-based routing
         """
-        
-        self._channel.queue_declare(queue=queue, durable=True)
-        
-        if isinstance(message,(dict,list)):
+
+        if isinstance(message, (dict, list)):
             body = json.dumps(message)
-            content_type = 'application/json'
+            content_type = "application/json"
         else:
             body = str(message)
-            content_type = 'text/plain'
-            
-        self._channel.basic_publish(
-            exchange='',             
-            routing_key=queue,        
-            body=body.encode('utf-8'),
-            properties=pika.BasicProperties(
-                delivery_mode=2,
-                content_type=content_type
+            content_type = "text/plain"
+
+        exchange_name = ""
+        target_routing_key = routing_key
+
+
+        if exchange_name:
+            exchange_name=exchange_name
+            self._channel.exchange_declare(
+                exchange=exchange_name,
+                exchange_type=exchange.type,
+                durable=exchange.durable,
             )
+        elif queue:
+            self._channel.queue_declare(queue=queue, durable=True)
+            target_routing_key = queue
+
+        self._channel.basic_publish(
+            exchange=exchange_name,
+            routing_key=target_routing_key,
+            body=body.encode("utf-8"),
+            properties=pika.BasicProperties(delivery_mode=2, content_type=content_type),
         )
-        print(f"[+] XRabbitProducer sent message to queue '{queue}'")
-        
+        dest = (
+            f"exchange '{exchange_name}' with key '{target_routing_key}'"
+            if exchange
+            else f"queue '{queue}'"
+        )
+        print(f"[+] XRabbitProducer routed message to {dest}")
