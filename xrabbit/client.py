@@ -138,3 +138,13 @@ class XRabbit:
         if self._connection and self._connection.is_open:
             self._connection.close()
             print("[-] XRabbit connection safely terminated.")
+
+    def __enter__(self):
+        """Activates the context manager and returns the connected instance."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Guarantees connection teardown when exiting the 'with' block scope."""
+        print("\n[XRabbit Context]: Exiting context scope. Initiating graceful teardown...")
+        self.close()
+        return False
