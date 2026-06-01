@@ -5,12 +5,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "xrabbit"
 version = "0.1.0"
-description = "A clean, developer-friendly Python SDK wrapper for RabbitMQ"
+description = "A clean, developer-friendly Python SDK wrapper for RabbitMQ (Sync & Async)"
 readme = "README.md"
 requires-python = ">=3.8"
-dependencies = [
-    "pika>=1.3.0"
+authors = [
+    { name = "Praveen" }
 ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers"
+]
+dependencies = [
+    "pika>=1.3.0",
+    "aio-pika>=9.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/PraveenN1/xrabbit"
 
 [tool.setuptools.packages.find]
 where = ["."]
