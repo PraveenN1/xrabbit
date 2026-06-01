@@ -100,7 +100,9 @@ class XRabbit:
                 "\n[XRabbit Runtime Alert]: Connection lost during publish! Attempting healing..."
             )
             self.connect()
-            self.producer.publish(queue=queue, message=message, exchange=exchange, routing_key=routing_key)
+            self.producer.publish(
+                queue=queue, message=message, exchange=exchange, routing_key=routing_key
+            )
 
     def listen(
         self,

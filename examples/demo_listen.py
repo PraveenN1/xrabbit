@@ -1,7 +1,8 @@
-from xrabbit import XRabbit,RabbitCredentials,ConnectionConfig
+from xrabbit import XRabbit, RabbitCredentials, ConnectionConfig
 
-creds = RabbitCredentials(username='guest', password='guest')
-config = ConnectionConfig(host='localhost', port=5672)
+creds = RabbitCredentials(username="guest", password="guest")
+config = ConnectionConfig(host="localhost", port=5672)
+
 
 def process_incoming_order(order):
     print("\n--- New Message Received! ---")
@@ -11,7 +12,8 @@ def process_incoming_order(order):
     print(f"Total Revenue: ${order['pricing']['total']:.2f}")
     print("-----------------------------\n")
 
-mq=XRabbit(credentials=creds,config=config)
+
+mq = XRabbit(credentials=creds, config=config)
 
 try:
     mq.listen(queue="customer_orders", callback=process_incoming_order)

@@ -16,7 +16,7 @@ creds = RabbitCredentials(username="guest", password="guest")
 config = ConnectionConfig(host="localhost", port=5672)
 
 mq = XRabbit(credentials=creds, config=config)
-broadcast_exchange = ExchangeConfig(name='marketing_events', type='fanout')
+broadcast_exchange = ExchangeConfig(name="marketing_events", type="fanout")
 
 # Listen to our specific queue, but bind it to the marketing_events fanout exchange
 mq.listen(queue=target_queue, callback=handle_broadcast, exchange=broadcast_exchange)

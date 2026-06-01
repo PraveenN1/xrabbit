@@ -1,7 +1,7 @@
 from xrabbit import XRabbit, ConnectionConfig, RabbitCredentials
 
-creds = RabbitCredentials(username='guest', password='guest')
-config = ConnectionConfig(host='localhost', port=5672)
+creds = RabbitCredentials(username="guest", password="guest")
+config = ConnectionConfig(host="localhost", port=5672)
 
 
 try:

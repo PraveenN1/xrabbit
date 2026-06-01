@@ -30,9 +30,8 @@ class XRabbitProducer:
         exchange_name = ""
         target_routing_key = routing_key
 
-
         if exchange_name:
-            exchange_name=exchange_name
+            exchange_name = exchange_name
             self._channel.exchange_declare(
                 exchange=exchange_name,
                 exchange_type=exchange.type,
