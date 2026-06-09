@@ -20,6 +20,8 @@ class AsyncXRabbitProducer:
         queue: Optional[str] = None,
         exchange: Optional[ExchangeConfig] = None,
         routing_key: str = "",
+        expiration: Optional[int] = None,
+        priority: Optional[int] = None,
     ):
         """Asynchronously serializes and publishes messages over non-blocking sockets."""
         if isinstance(message, (dict, list)):
@@ -29,7 +31,19 @@ class AsyncXRabbitProducer:
             body = str(message)
             content_type = "text/plain"
 
-        
+        message_kwargs = {
+            "body": body.encode("utf-8"),
+            "delivery_mode": aio_pika.DeliveryMode.PERSISTENT,
+            "content_type": content_type,
+        }
+
+        if expiration is not None:
+            message_kwargs["expiration"] = (
+                expiration / 1000.0
+            )  # aio-pika accepts float seconds or timedelta
+        if priority is not None:
+            message_kwargs["priority"] = priority
+
         target_routing_key = routing_key
 
         if exchange:
@@ -45,14 +59,12 @@ class AsyncXRabbitProducer:
             target_routing_key = queue
 
         else:
-            raise ValueError("You must supply either an exchange or a queue parameter to publish.")
-        
+            raise ValueError(
+                "You must supply either an exchange or a queue parameter to publish."
+            )
+
         await exchange_obj.publish(
-            aio_pika.Message(
-                body=body.encode("utf-8"),
-                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
-                content_type=content_type,
-            ),
+            aio_pika.Message(**message_kwargs),
             routing_key=target_routing_key,
         )
         dest = f"exchange '{exchange_name}'" if exchange else f"queue '{queue}'"

@@ -14,6 +14,7 @@ class XRabbitProducer:
         message: Any = None,
         exchange: Optional[ExchangeConfig] = None,
         routing_key: str = "",
+        properties = None,
     ):
         """
         Publishes a message. Supports both simple queue direct targeting
@@ -30,7 +31,7 @@ class XRabbitProducer:
         exchange_name = ""
         target_routing_key = routing_key
 
-        if exchange_name:
+        if exchange:
             exchange_name = exchange_name
             self._channel.exchange_declare(
                 exchange=exchange_name,

@@ -1,6 +1,7 @@
 import pika
 import sys
 import time
+import json
 from typing import Any, Callable, Optional
 from .configs import RabbitCredentials, ConnectionConfig, ExchangeConfig
 from .producer import XRabbitProducer
@@ -88,12 +89,33 @@ class XRabbit:
         queue: Optional[str] = None,
         exchange: ExchangeConfig = None,
         routing_key: str = "",
+        expiration: Optional[int] = None,
+        priority: Optional[int] = None,
     ):
+        if isinstance(message, (dict, list)):
+            body = json.dumps(message)
+            content_type = "application/json"
+        else:
+            body = str(message)
+            content_type = "text/plain"
+
+        # Dynamically build AMQP basic properties
+        properties_kwargs = {
+            "delivery_mode": 2, # Persistent
+            "content_type": content_type
+        }
+        
+        if expiration is not None:
+            properties_kwargs["expiration"] = str(expiration)
+        if priority is not None:
+            properties_kwargs["priority"] = priority
+
+        properties = pika.BasicProperties(**properties_kwargs)
         try:
             if not self.producer:
                 raise RuntimeError("XRabbit is not connected.")
             self.producer.publish(
-                queue=queue, message=message, exchange=exchange, routing_key=routing_key
+                queue=queue, message=message, exchange=exchange, routing_key=routing_key, properties = properties,
             )
         except (pika.exceptions.ConnectionClosed, pika.exceptions.ChannelClosed):
             print(
@@ -101,7 +123,7 @@ class XRabbit:
             )
             self.connect()
             self.producer.publish(
-                queue=queue, message=message, exchange=exchange, routing_key=routing_key
+                queue=queue, message=message, exchange=exchange, routing_key=routing_key, properties = properties
             )
 
     def listen(
